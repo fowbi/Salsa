@@ -1,0 +1,11 @@
+*.py[cod]
+
+# Packages
+*.egg-info
+*.egg
+dist
+build
+eggs
+
+# Mac shizzle
+.DS_Store
