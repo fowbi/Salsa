@@ -62,7 +62,5 @@ class Salsa(object):
         self.config_file.umount_share(name)
 
 
-print "abc" if sys.version_info[:2] < (2, 7) else None
-
-#salsa_ = Salsa()
-#cli_ = cli(salsa_)
+salsa_ = Salsa()
+cli_ = cli(salsa_)
