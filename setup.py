@@ -5,7 +5,7 @@ version = '0.1'
 
 setup(name='salsa',
       version=version,
-      packages=['Salsa'],
+      packages=['salsa'],
       description="",
       keywords='',
       author='',
@@ -14,5 +14,9 @@ setup(name='salsa',
       scripts=[
           'salsa/bin/salsa'
       ],
-      install_requires=[],
+      install_requires=list(filter(None, [
+        "pexpect",
+        "pyyaml",
+        "argparse" if sys.version_info[:2] < (2, 7) else None,
+          ])),
       )
