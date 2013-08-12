@@ -47,19 +47,23 @@ class cli(object):
         #print args
         print "\n"
 
-        if args.command == 'show':
-            self.salsa.show_share_details(args.name)
-        elif args.command == 'list':
-            self.salsa.list_shares()
-        elif args.command == 'add':
-            self.salsa.add_share()
-        elif args.command == 'edit':
-            self.salsa.edit_share(args.name)
-        elif args.command == 'delete':
-            self.salsa.delete_share(args.name)
-        elif args.command == 'mount':
-            self.salsa.mount_share(args.name)
-        elif args.command == 'umount':
-            self.salsa.umount_share(args.name)
+        try:
+            if args.command == 'show':
+                self.salsa.show_share_details(args.name)
+            elif args.command == 'list':
+                self.salsa.list_shares()
+            elif args.command == 'add':
+                self.salsa.add_share()
+            elif args.command == 'edit':
+                self.salsa.edit_share(args.name)
+            elif args.command == 'delete':
+                self.salsa.delete_share(args.name)
+            elif args.command == 'mount':
+                self.salsa.mount_share(args.name)
+            elif args.command == 'umount':
+                self.salsa.umount_share(args.name)
+
+        except Exception:
+            print "something went wrong"
 
         print "\n"

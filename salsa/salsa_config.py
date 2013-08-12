@@ -24,14 +24,16 @@ class Config(object):
         return expanduser('~/.salsa_config')
 
     def load(self):
+        self.shares = []
         docs = yaml.load_all(open(self.config_file, 'r'))
 
         for doc in docs:
             ss = Salsa_Share(doc['name'], doc['server'])
             ss.username = doc['username']
-            ss.password = doc['password']
+            ss.password = doc['password'] if doc['password'] is not None else ''
             ss.share = doc['share']
             ss.mount_point = doc['mount_point']
+
             self.shares.append(ss)
 
     def write(self):
@@ -47,15 +49,34 @@ class Config(object):
         yaml.dump_all(dict_list, open(self.config_file, 'w'), default_flow_style=False)
 
     def add_share(self, salsa_share):
-        self.shares.append(salsa_share)
-        self.write()
+        if not self.is_duplicate_share(salsa_share):
+            self.shares.append(salsa_share)
+            self.write()
+        else:
+            raise Exception('duplicate name')
 
     def delete_share(self, name):
-        self.shares = [share for share in self.shares if share.name != name]
-        self.write()
+        new_shares = [share for share in self.shares if share.name != name]
+        if (len(new_shares) == len(self.shares)):
+            return False
 
-    def edit_share(self, name):
-        print 'todo'
+        self.shares = new_shares
+        self.write()
+        return True
+
+    def edit_share(self, name, salsa_share):
+        for share in self.shares:
+            print share.name
+            if share.name == name:
+                share.name = salsa_share.name
+                share.username = salsa_share.username
+                share.password = salsa_share.password
+                share.share = salsa_share.share
+                share.mount_point = salsa_share.mount_point
+                self.write()
+                return
+
+        raise Exception(name + ' does not exist')
 
     def list_shares(self):
         for share in self.shares:
@@ -83,6 +104,20 @@ class Config(object):
                 share.umount()
                 return
 
+    def is_duplicate_share(self, salsa_share):
+        for share in self.shares:
+            if share.name == salsa_share.name:
+                return True
+
+        return False
+
+    def lookup_share(self, name):
+        for share in self.shares:
+            if name == share.name:
+                return share
+
+        raise Exception(name + " does not exist")
+
 
 class Salsa_Share(object):
     username = "guest"
@@ -101,7 +136,7 @@ class Salsa_Share(object):
         slash_server_path = join("/", self.share)
         cmd = "//%s:%s@%s%s %s"
         cmd = cmd % (self.username, self.password, self.server, slash_server_path,
-                self.mount_point)
+            self.mount_point)
 
         return self.name + "\n\t" + cmd
 
@@ -125,7 +160,7 @@ class Salsa_Share(object):
         cmd = "%s //%s:%s@%s%s %s"
         cmd = cmd % (mount_bin, self.username, self.password, self.server, slash_server_path,
                 self.mount_point)
-        (output, returncode) = pexpect.run(cmd, withexitstatus = 1, timeout = 5)
+        (output, returncode) = pexpect.run(cmd, withexitstatus=1, timeout=5)
 
         if returncode != 0:
             raise Exception("Error while mounting : %s" % output)
@@ -139,7 +174,6 @@ class Salsa_Share(object):
 
     def umount(self):
         umount_bin = which("umount")
-        
         cmd = "%s %s" % (umount_bin, self.mount_point)
         (output, returncode) = pexpect.run(cmd, withexitstatus = 1, timeout = 5)
 

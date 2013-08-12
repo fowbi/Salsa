@@ -47,7 +47,43 @@ class Salsa(object):
         print "Share ", name, "was deleted"
 
     def edit_share(self, name):
-        self.config_file.edit_share(name)
+        ss = self.config_file.lookup_share(name)
+
+        new_name = raw_input("Name:[" + ss.name + "] ")
+        if new_name == '':
+            new_name = ss.name
+
+        server = raw_input("Server: [" + ss.server + "]")
+        if server == '':
+            server = ss.server
+
+        ss_ = Salsa_Share(new_name, server)
+
+        ss_.username = raw_input("Username: [" + ss.username + "]")
+        if ss_.username == '':
+            ss_.username = ss.username
+
+        password = raw_input("Password: ")
+        rp_password = raw_input("Repeat Password: ")
+        while (password != rp_password):
+            print "Passwords didn't match, pls retry kthxbai"
+            password = raw_input("Password: ")
+            rp_password = raw_input("Repeat Password: ")
+
+        ss_.password = password
+
+        ss_.share = raw_input("Folder: [" + ss.share + "]")
+        if ss_.share == '':
+            ss_.share = ss.share
+
+        ss_.mount_point = raw_input("Mount Point: [" + ss.mount_point + "]")
+        if ss_.mount_point == '':
+            ss_.mount_point = ss.mount_point
+
+        ss_.mount_point = "/Volumes/" + ss_.mount_point
+        self.config_file.edit_share(name, ss_)
+
+        print name, "was edited!"
 
     def list_shares(self):
         self.config_file.list_shares()
