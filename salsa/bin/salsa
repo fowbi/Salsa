@@ -1,3 +1,9 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 from salsa import Salsa
+from salsa.cli import Cli
+
+
+salsa = Salsa()
+Cli(salsa)

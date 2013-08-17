@@ -1,6 +1,8 @@
 import unittest
 import os
-from salsa import Salsa, Config, Salsa_Share
+from salsa import Config, Salsa_Share
+from salsa.exceptions import SalsaException, SalsaConnectionException
+
 
 class SalsaTest(unittest.TestCase):
     def setUp(self):
@@ -13,7 +15,7 @@ mount_point: share_test
 ---
 name: share2
 username: guest
-password: 
+password:
 server: 1.1.1.1
 share: share2
 mount_point: share_test_2"""
@@ -68,11 +70,10 @@ mount_point: share_test_2"""
         ss.password = 'user_2_pass'
         ss.share = 'share_3'
         ss.mount_point = 'share_test_3'
-        self.assertRaises(Exception, self.config.add_share, ss)
+        self.assertRaises(SalsaException, self.config.add_share, ss)
 
     def testDeleteShare(self):
-        ret = self.config.delete_share('share1')
-        self.assertTrue(ret)
+        self.config.delete_share('share1')
 
         # Reload config
         config_ = Config('/tmp/salsa_config')
@@ -80,8 +81,7 @@ mount_point: share_test_2"""
         self.assertEqual(len(config_.shares), 1)
 
     def testDeleteUnkownShare(self):
-        ret = self.config.delete_share('share3')
-        self.assertFalse(ret)
+        self.assertRaises(SalsaException, self.config.delete_share, 'share3')
 
         # Reload config
         config_ = Config('/tmp/salsa_config')
@@ -122,10 +122,20 @@ mount_point: share_test_2"""
         pass
 
     def testUnsuccesfulShareMount(self):
-        pass
+        config_ = Config('/tmp/salsa_config')
+        config_.load()
+        self.assertRaises(
+            SalsaConnectionException,
+            config_.mount_share,
+            'share1')
 
     def testUnsuccesfulShareUnmount(self):
-        pass
+        config_ = Config('/tmp/salsa_config')
+        config_.load()
+        self.assertRaises(
+            SalsaConnectionException,
+            config_.umount_share,
+            'share1')
 
     def tearDown(self):
         os.unlink('/tmp/salsa_config')

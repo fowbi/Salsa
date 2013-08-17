@@ -1,5 +1,6 @@
-from setuptools import setup, find_packages
-import sys, os
+from setuptools import setup
+import sys
+
 
 version = '0.2'
 
@@ -15,8 +16,7 @@ setup(name='salsa',
           'salsa/bin/salsa'
       ],
       install_requires=list(filter(None, [
-        "pexpect",
-        "pyyaml",
-        "argparse" if sys.version_info[:2] < (2, 7) else None,
-          ])),
-      )
+          "pexpect",
+          "pyyaml",
+          "argparse" if sys.version_info[:2] < (2, 7) else None,
+      ])),)
