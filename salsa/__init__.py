@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 
 
-from salsa_config import Config
-from salsa_config import Salsa_Share
-from core import MandatoryUserInput, OptionalUserInput, ColoredOutput
-from termcolor import colored, cprint
-from exceptions import SalsaException
+from salsa_config import Config, Salsa_Share
+from core import MandatoryUserInput, OptionalUserInput
 
 
 class Salsa(object):

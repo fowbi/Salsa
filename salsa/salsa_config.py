@@ -3,51 +3,109 @@
 
 import yaml
 import pexpect
+import os
 
-from os.path import exists, dirname, join, isdir, expanduser
-from os import listdir, rmdir, makedirs
 from core import which
-from exceptions import SalsaException, SalsaConnectionException
+from salsa.exceptions import SalsaException, SalsaConnectionException
 
 
 class Config(object):
     """
         Configuration for samba share
     """
+
+    _base_mp_directory = ''
+    _default_mp_directory = 'share'
+
     def __init__(self, config_file=None):
         if not config_file:
             config_file = self.get_default_salsa_config()
 
-        self.config_file = config_file
+        self.config_file = os.path.abspath(config_file)
 
-        if not exists(self.config_file):
-            if not exists(dirname(self.config_file)):
-                makedirs(dirname(self.config_file))
+        if not os.path.exists(self.config_file):
+            if not os.path.exists(os.path.dirname(self.config_file)):
+                os.makedirs(os.path.dirname(self.config_file))
             open(self.config_file, 'w+').close()
 
         self.shares = []
+        self.base_mp_directory = self.get_system_based_base_mp_directory()
 
     def get_default_salsa_config(self):
         """
             Get default salsa_config location
         """
-        return expanduser('~/.salsa_config')
+        return os.path.expanduser('~/.salsa_config')
 
     def load(self):
         """
             Load share list from configuration file
         """
         self.shares = []
-        docs = yaml.load_all(open(self.config_file, 'r'))
+        doc = yaml.load(open(self.config_file, 'r'))
 
-        for doc in docs:
-            ss = Salsa_Share(doc['name'], doc['server'])
-            ss.username = doc['username']
-            ss.password = doc['password'] if doc['password'] is not None else ''
-            ss.share = doc['share']
-            ss.mount_point = doc['mount_point']
+        if not doc:  # Write new configuration file.
+            self.write()
+            return
 
-            self.shares.append(ss)
+        write_doc = False
+        if 'base_mp_directory' in doc and doc['base_mp_directory']:
+            self.base_mp_directory = doc['base_mp_directory']
+        else:
+            write_doc = True
+
+        if 'default_mp_directory' in doc:
+            self.default_mp_directory = doc['default_mp_directory']
+        else:
+            write_doc = True
+
+        if 'shares' in doc:
+            for share in doc['shares']:
+                ss = Salsa_Share(share['name'], share['server'])
+                ss.username = share['username']
+                ss.password = share['password'] if share['password'] is not None else ''
+                ss.share = share['share']
+                ss.mount_point = share['mount_point']
+                self.shares.append(ss)
+
+        if write_doc:
+            self.write()
+
+    @property
+    def base_mp_directory(self):
+        "Getter for base_mp_directory"
+        return self._base_mp_directory
+
+    @base_mp_directory.setter
+    def base_mp_directory(self, directory):
+        """
+            Setter for base_mp_directory
+            Falls back to a system based directory.
+        """
+        if not directory:
+            directory = self.get_system_based_base_mp_directory()
+        self._base_mp_directory = directory
+
+    @property
+    def default_mp_directory(self):
+        "Getter for default_mp_directory"
+        return self._default_mp_directory
+
+    @default_mp_directory.setter
+    def default_mp_directory(self, directory):
+        """
+            Setter for default_mp_directory
+            Falls back to 'share' if none given
+        """
+        if not directory:
+            directory = 'share'
+        self._default_mp_directory = directory
+
+    def get_system_based_base_mp_directory(self):
+        if os.name.lower() == 'linux':
+            return '/mnt/'
+        else:
+            return '/Volumes/'
 
     def write(self):
         """
@@ -62,7 +120,14 @@ class Config(object):
 
             dict_list.append(share.__dict__)
 
-        yaml.dump_all(dict_list, open(self.config_file, 'w'),
+        doc_ = [{
+            'base_mp_directory': self.base_mp_directory,
+            'default_mp_directory': self.default_mp_directory,
+            'shares': dict_list
+        }]
+        #print doc_
+
+        yaml.dump_all(doc_, open(self.config_file, 'w'),
                       default_flow_style=False)
 
     def add_share(self, salsa_share):
@@ -180,7 +245,7 @@ class Salsa_Share(object):
 
     def __repr__(self):
         "Custom representation of samba share"
-        slash_server_path = join("/", self.share)
+        slash_server_path = os.path.join("/", self.share)
         cmd = "//%s:%s@%s%s %s"
         cmd = cmd % (
             self.username,
@@ -194,10 +259,10 @@ class Salsa_Share(object):
     def pre_mount(self):
         "Define operations before mounting the samba share"
         # Create mount point directory
-        if not exists(self.mount_point):
-            makedirs(self.mount_point)
+        if not os.path.exists(self.mount_point):
+            os.makedirs(self.mount_point)
 
-        if not isdir(self.mount_point):
+        if not os.path.isdir(self.mount_point):
             raise Exception("Directory \"%s\" was not found/not created" % self.mount_point)
 
     def post_mount(self):
@@ -207,7 +272,7 @@ class Salsa_Share(object):
     def mount(self):
         "Mount samba share to designated mount point"
         mount_bin = which("mount_smbfs")
-        slash_server_path = join("/", self.share)
+        slash_server_path = os.path.join("/", self.share)
         cmd = "%s //%s:%s@%s%s %s"
         cmd = cmd % (
             mount_bin,
@@ -228,8 +293,8 @@ class Salsa_Share(object):
 
     def post_umount(self):
         "Define operations after unmounting the samba share"
-        if isdir(self.mount_point) and not listdir(self.mount_point):
-            rmdir(self.mount_point)
+        if os.path.isdir(self.mount_point) and not os.listdir(self.mount_point):
+            os.rmdir(self.mount_point)
 
     def umount(self):
         "Unmount the samba share from its mount point"
@@ -240,3 +305,5 @@ class Salsa_Share(object):
         if returncode != 0:
             raise SalsaConnectionException("Could not umount %s\n\t<< %s >>" %
                             (self.mount_point, output))
+
+#if __name__ == "__main__":

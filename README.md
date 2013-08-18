@@ -8,12 +8,23 @@ specified directory.
 
 ## Installation
 
-Because I'm lazy
+__Easy install__
 
     $ git clone git://github.com/fowbi/salsa.git
     $ cd salsa
     $ python setup.py build
     $ [sudo] easy_install .
+
+__Pip__
+
+    $ git clone git://github.com/fowbi/salsa.git
+    $ cd salsa
+    $ python setup.py build
+    $ [sudo] pip install .
+
+    or upgrade
+
+    $ [sudo] pip install --upgrade .
 
 ## Usage
 

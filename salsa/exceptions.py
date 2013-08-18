@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-
 class SalsaException(Exception):
     "Custom Salsa Exception."
     def __init__(self, message):
