@@ -271,9 +271,9 @@ class Salsa_Share(object):
 
     def mount(self):
         "Mount samba share to designated mount point"
-        mount_bin = which("mount_smbfs")
+        mount_bin = which("mount")
         slash_server_path = os.path.join("/", self.share)
-        cmd = "%s //%s:%s@%s%s %s"
+        cmd = "%s -t smbfs //%s:%s@%s%s %s"
         cmd = cmd % (
             mount_bin,
             self.username,
