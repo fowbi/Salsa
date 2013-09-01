@@ -3,6 +3,7 @@
 
 from salsa_config import Config, Salsa_Share
 from core import MandatoryUserInput, OptionalUserInput
+import os
 
 
 class Salsa(object):
@@ -30,12 +31,11 @@ class Salsa(object):
             rp_password = OptionalUserInput("Repeat Password: ").get().variable
 
         ss.password = password
-        ss.share = OptionalUserInput("Folder: ").get().variable
+        ss.share = MandatoryUserInput("Folder: ").get().variable
         mount_point = OptionalUserInput("Mount Point: ").get().variable
         if (mount_point == ''):
-            mount_point = ss.name
+            mount_point = os.path.join('/', self.config_file.get_system_based_base_mp_directory(), ss.name)
 
-        # TODO mount_point should default to DEFAULT_MOUNT_POINT if none given
         ss.mount_point = mount_point
 
         test = OptionalUserInput("Test connection before saving?: [Y/n] ", 'Y').get().variable
@@ -107,3 +107,10 @@ class Salsa(object):
     def umount_share(self, name):
         "Unmount samba share based on given name"
         self.config_file.umount_share(name)
+
+
+#if __name__ == '__main__':
+    #from salsa.cli import Cli
+
+    #salsa = Salsa()
+    #Cli(salsa)
