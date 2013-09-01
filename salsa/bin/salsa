@@ -4,6 +4,4 @@
 from salsa import Salsa
 from salsa.cli import Cli
 
-
-salsa = Salsa()
-Cli(salsa)
+Cli(Salsa())

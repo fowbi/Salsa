@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 from salsa_config import Config, Salsa_Share
 from core import MandatoryUserInput, OptionalUserInput
 import os
@@ -16,8 +15,7 @@ class Salsa(object):
         self.config_file = Config(config_file)
         self.config_file.load()
 
-    def add_share(self):
-        "Add new samba share to configuration."
+    def do_add(self):
         name = MandatoryUserInput("Name: ").get().variable
         server = MandatoryUserInput("Server: ").get().variable
         ss = Salsa_Share(name, server)
@@ -48,17 +46,26 @@ class Salsa(object):
 
         self.config_file.add_share(ss)
 
-        return ss.name
+        return "Share %s has been added!" % name
 
-    def delete_share(self, name):
+    def do_list(self):
+        "List all samba shares"
+        self.config_file.list_shares()
+
+    def do_show(self, name):
+        "Show samba share details based on given name"
+        self.config_file.show_share_details(name)
+
+    def do_delete(self, name):
         "Delete samba share based on given name."
         self.config_file.lookup_share(name)  # Check if share exists.
 
         confirm = OptionalUserInput("Are you sure you want to delete %s?: [Y/n] " % name, 'Y').get().variable
         if confirm.upper() == 'Y':
             self.config_file.delete_share(name)
+            return "Share %s has been deleted!" % name
 
-    def edit_share(self, name):
+    def do_edit(self, name):
         "Edit samba share based on given name"
         ss = self.config_file.lookup_share(name)
 
@@ -92,25 +99,23 @@ class Salsa(object):
 
         self.config_file.edit_share(name, ss_)
 
-    def list_shares(self):
-        "List all samba shares"
-        self.config_file.list_shares()
+        return "Share %s has been edited!" % name
 
-    def show_share_details(self, name):
-        "Show samba share details based on given name"
-        self.config_file.show_share_details(name)
-
-    def mount_share(self, name):
+    def do_mount(self, name):
         "Mount samba share based on given name"
         self.config_file.mount_share(name)
 
-    def umount_share(self, name):
+        return "Share %s has been mounted" % name
+
+    def do_unmount(self, name):
         "Unmount samba share based on given name"
         self.config_file.umount_share(name)
 
+        return "Share %s has been unmounted" % name
 
-#if __name__ == '__main__':
+
+if __name__ == '__main__':
     #from salsa.cli import Cli
+    from cli import Cli
 
-    #salsa = Salsa()
-    #Cli(salsa)
+    Cli(Salsa())
