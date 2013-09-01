@@ -4,6 +4,7 @@ from salsa_config import Config, Salsa_Share
 from core import MandatoryUserInput, OptionalUserInput
 import os
 
+__version__ = '0.4.0'
 
 class Salsa(object):
     """
@@ -114,8 +115,7 @@ class Salsa(object):
         return "Share %s has been unmounted" % name
 
 
-if __name__ == '__main__':
-    #from salsa.cli import Cli
-    from cli import Cli
+#if __name__ == '__main__':
+    #from cli import Cli
 
-    Cli(Salsa())
+    #Cli(Salsa())

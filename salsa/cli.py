@@ -18,13 +18,14 @@ Options:
 
 from docopt import docopt
 from core import ColoredOutput
+from salsa import __version__
 from salsa.exceptions import SalsaException, SalsaConnectionException
 
 
 class Cli(object):
     def __init__(self, salsa):
         self.salsa = salsa
-        args = docopt(__doc__, version="Salsa 1.0.0")
+        args = docopt(__doc__, version=__version__)
 
         fn = 'do_' + [arg for arg in args if args[arg] is True].pop()
 
