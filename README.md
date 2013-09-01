@@ -10,14 +10,14 @@ specified directory.
 
 __Easy install__
 
-    $ git clone git://github.com/fowbi/salsa.git
+    $ git clone https://github.com/fowbi/Salsa.git
     $ cd salsa
     $ python setup.py build
     $ [sudo] easy_install .
 
 __Pip__
 
-    $ git clone git://github.com/fowbi/salsa.git
+    $ git clone https://github.com/fowbi/Salsa.git
     $ cd salsa
     $ python setup.py build
     $ [sudo] pip install .
